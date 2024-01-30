@@ -43,11 +43,41 @@ app.get("/getURLTing", (req, res) => {
         });
 });
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
     const queryURL = new urlParse(req.url);
     const code = queryString.parse(queryURL.query).code;
-    
-    console.log(code);
+    const oauth2Client = new google.auth.OAuth2(
+        // Client Id
+        process.env.CLIENT_ID,
+        // client secret
+        process.env.CLIENT_SECRET,
+        // link to redirect
+        "http://localhost:3000",
+    )
+
+    const tokens = await oauth2Client.getToken(code);
+ 
+    let leadDataList = [];
+
+    try {
+
+        const result = await axios({
+            method: "GET",
+            headers: {
+                authorization: "Bearer" + tokens.tokens.access_token
+            },
+            "Content-Type": "application/json",
+            url: `https://localservices.googleapis.com/v1/detailedLeadReports:search?query=manager_customer_id:197-383-537`
+           
+        })
+
+        console.log(result);
+
+
+    } catch (err) {
+
+    }
+     
 });
 
 app.listen(port, () => {
